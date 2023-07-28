@@ -1,5 +1,3 @@
-use std::path::PathBuf;
-
 use clap::{Parser, Subcommand};
 
 #[derive(Parser, Debug)]
@@ -38,8 +36,8 @@ pub(crate) enum Command {
 pub(crate) enum Config {
     WorkBrowser { browser: Option<String> },
     PlayBrowser { browser: Option<String> },
-    WorkBackgroundDir { dir: Option<PathBuf> },
-    PlayBackgroundDir { dir: Option<PathBuf> },
+    WorkBackgroundDir { dir: Option<String> },
+    PlayBackgroundDir { dir: Option<String> },
 }
 
 #[cfg(test)]

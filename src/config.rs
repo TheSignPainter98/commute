@@ -1,6 +1,7 @@
 use serde::{Deserialize as Deserialise, Serialize as Serialise};
-use std::{error::Error, fs, path::PathBuf};
+use std::{error::Error, fs};
 
+#[derive(Serialise, Deserialise)]
 pub(crate) struct Settings {
     work: Profile,
     play: Profile,
@@ -23,5 +24,5 @@ impl Settings {
 #[derive(Serialise, Deserialise)]
 pub(crate) struct Profile {
     browser: String,
-    background_dir: PathBuf,
+    background_dir: String,
 }
