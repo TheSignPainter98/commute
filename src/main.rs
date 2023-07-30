@@ -17,24 +17,21 @@ fn main() {
     let args = Args::parse();
 
     if let Err(e) = run(args) {
-        println!("{e}");
+        eprintln!("{e}");
     }
 }
 
 fn run(args: Args) -> Result<()> {
     let mut settings = Settings::new()?;
-    println!("{settings:#?}");
 
     match args.command().unwrap_or(&Default::default()) {
         Command::Auto => ProfileApplicator::auto(&settings).apply(),
         Command::Work => {
             settings.declare_profile_overridden(ProfileType::Work);
-            println!("{settings:#?}");
             ProfileApplicator::new(&settings, ProfileType::Work).apply()
         }
         Command::Play => {
             settings.declare_profile_overridden(ProfileType::Play);
-            println!("{settings:#?}");
             ProfileApplicator::new(&settings, ProfileType::Play).apply()
         }
         Command::Config(config) => {
