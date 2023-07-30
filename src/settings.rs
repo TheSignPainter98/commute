@@ -73,8 +73,9 @@ impl Settings {
         self.r#override.as_ref()
     }
 
-    pub(crate) fn declare_override_day(&mut self, profile_type: ProfileType) {
+    pub(crate) fn declare_profile_overridden(&mut self, profile_type: ProfileType) {
         let date = Utc::now();
+        self.dirty = true;
         self.r#override = Some(Override { date, profile_type })
     }
 }
@@ -100,11 +101,29 @@ impl Default for Settings {
 
 #[derive(Debug, Serialise, Deserialise)]
 pub(crate) struct Profile {
-    pub(crate) browser: String,
-    pub(crate) background_dir: String,
+    browser: String,
+    background_dir: String,
 
     #[serde(skip)]
     dirty: bool,
+}
+
+impl Profile {
+    pub(crate) fn browser(&self) -> &str {
+        &self.browser
+    }
+
+    pub(crate) fn set_browser(&mut self, browser: String) {
+        self.browser = browser;
+    }
+
+    pub(crate) fn background_dir(&self) -> &str {
+        &self.background_dir
+    }
+
+    pub(crate) fn set_background_dir(&mut self, background_dir: String) {
+        self.background_dir = background_dir;
+    }
 }
 
 #[derive(Debug, Serialise, Deserialise)]
