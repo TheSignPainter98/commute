@@ -1,18 +1,17 @@
 use std::error::Error;
 
 use crate::{
-    args::{Args, ConfigOption},
+    args::{ConfigOption},
     settings::Settings,
 };
 
 pub(crate) struct Configurator<'a> {
-    args: &'a Args,
     settings: &'a mut Settings,
 }
 
 impl<'a> Configurator<'a> {
-    pub(crate) fn new(args: &'a Args, settings: &'a mut Settings) -> Self {
-        Self { args, settings }
+    pub(crate) fn new(settings: &'a mut Settings) -> Self {
+        Self { settings }
     }
 
     pub(crate) fn config(&mut self, config_option: &ConfigOption) -> Result<(), Box<dyn Error>> {

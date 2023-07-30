@@ -4,7 +4,6 @@ use chrono::{Datelike, NaiveTime, Utc};
 use lazy_static::lazy_static;
 
 use crate::{
-    args::Args,
     settings::{Override, Profile, ProfileType, Settings},
 };
 
@@ -14,25 +13,22 @@ lazy_static! {
 }
 
 pub(crate) struct ProfileApplier<'a> {
-    args: &'a Args,
     settings: &'a Settings,
     profile_type: ProfileType,
 }
 
 impl<'a> ProfileApplier<'a> {
-    pub(crate) fn new(args: &'a Args, settings: &'a Settings, profile_type: ProfileType) -> Self {
+    pub(crate) fn new(settings: &'a Settings, profile_type: ProfileType) -> Self {
         Self {
-            args,
             settings,
             profile_type,
         }
     }
 
-    pub(crate) fn auto(args: &'a Args, settings: &'a Settings) -> Self {
+    pub(crate) fn auto(settings: &'a Settings) -> Self {
         let profile_type = settings
             .r#override()
-            .map(Override::advise_profile)
-            .flatten()
+            .and_then(Override::advise_profile)
             .unwrap_or_else(|| {
                 let now = Utc::now();
                 use chrono::Weekday::*;
@@ -48,7 +44,7 @@ impl<'a> ProfileApplier<'a> {
                     }
                 }
             });
-        Self::new(args, settings, profile_type)
+        Self::new(settings, profile_type)
     }
 
     pub(crate) fn apply(&self) -> Result<(), Box<dyn Error>> {
@@ -58,7 +54,7 @@ impl<'a> ProfileApplier<'a> {
         }
     }
 
-    fn apply_profile(&self, profile: &Profile) -> Result<(), Box<dyn Error>> {
+    fn apply_profile(&self, _profile: &Profile) -> Result<(), Box<dyn Error>> {
         todo!("apply profile {:?}", self.profile_type);
     }
 }

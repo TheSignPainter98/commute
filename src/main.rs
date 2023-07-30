@@ -18,21 +18,21 @@ fn main() -> Result<(), Box<dyn Error>> {
     println!("{settings:#?}");
 
     match args.command().unwrap_or(&Default::default()) {
-        Command::Auto => ProfileApplier::auto(&args, &settings).apply(),
+        Command::Auto => ProfileApplier::auto(&settings).apply(),
         Command::Work => {
             settings.declare_profile_overridden(ProfileType::Work);
             println!("{settings:#?}");
-            ProfileApplier::new(&args, &settings, ProfileType::Work).apply()
+            ProfileApplier::new(&settings, ProfileType::Work).apply()
         }
         Command::Play => {
             settings.declare_profile_overridden(ProfileType::Play);
             println!("{settings:#?}");
-            ProfileApplier::new(&args, &settings, ProfileType::Play).apply()
+            ProfileApplier::new(&settings, ProfileType::Play).apply()
         }
         Command::Config(config_option) => {
             // TODO(kcza): make the config_option be either Show(field) |
             // Set(field, value)
-            Configurator::new(&args, &mut settings).config(config_option)
+            Configurator::new(&mut settings).config(config_option)
         }
     }?;
 
