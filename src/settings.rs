@@ -45,6 +45,7 @@ impl Settings {
         let mut settings_file = OpenOptions::new()
             .write(true)
             .create(true)
+            .truncate(true)
             .open(settings_path)?;
         Ok(write!(settings_file, "{}", serde_json::to_string(self)?)?)
     }
