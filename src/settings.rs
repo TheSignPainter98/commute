@@ -1,15 +1,15 @@
 use std::{
-    error::Error,
     fs::{self, OpenOptions},
     io::Write,
     path::Path,
 };
 
+use anyhow::Context;
 use chrono::{offset::Utc, serde::ts_seconds, DateTime, Duration};
 use lazy_static::lazy_static;
 use serde::{Deserialize as Deserialise, Serialize as Serialise};
 
-use crate::args::ProfileType;
+use crate::{args::ProfileType, result::Result};
 
 lazy_static! {
     static ref SETTINGS_FILE: String =
@@ -27,7 +27,7 @@ pub(crate) struct Settings {
 }
 
 impl Settings {
-    pub(crate) fn new() -> Result<Self, Box<dyn Error>> {
+    pub(crate) fn new() -> Result<Self> {
         if let Ok(src) = fs::read_to_string(&SETTINGS_FILE[..]) {
             Ok(serde_json::from_str(&src)?)
         } else {
@@ -35,20 +35,21 @@ impl Settings {
         }
     }
 
-    pub(crate) fn save(&self) -> Result<(), Box<dyn Error>> {
+    pub(crate) fn save(&self) -> Result<()> {
         if !self.is_dirty() {
             return Ok(());
         }
 
         let settings_path = Path::new(&SETTINGS_FILE[..]);
         let settings_dir = settings_path.parent().unwrap();
-        fs::create_dir_all(settings_dir)?;
+        fs::create_dir_all(settings_dir).context("failed to create parent directories")?;
 
         let mut settings_file = OpenOptions::new()
             .write(true)
             .create(true)
             .truncate(true)
-            .open(settings_path)?;
+            .open(settings_path)
+            .context(format!("failed to write to {}", settings_path.display()))?;
         Ok(write!(settings_file, "{}", serde_json::to_string(self)?)?)
     }
 

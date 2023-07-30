@@ -1,19 +1,27 @@
 mod args;
 mod configurator;
+mod error;
 mod profile_applicator;
+mod result;
 mod settings;
-
-use std::error::Error;
 
 use clap::Parser;
 
 use crate::args::{Args, Command, ProfileType};
 use crate::configurator::Configurator;
 use crate::profile_applicator::ProfileApplicator;
+use crate::result::Result;
 use crate::settings::Settings;
 
-fn main() -> Result<(), Box<dyn Error>> {
+fn main() {
     let args = Args::parse();
+
+    if let Err(e) = run(args) {
+        println!("{e}");
+    }
+}
+
+fn run(args: Args) -> Result<()> {
     let mut settings = Settings::new()?;
     println!("{settings:#?}");
 
