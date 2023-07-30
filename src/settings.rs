@@ -9,6 +9,8 @@ use chrono::{offset::Utc, serde::ts_seconds, DateTime, Duration};
 use lazy_static::lazy_static;
 use serde::{Deserialize as Deserialise, Serialize as Serialise};
 
+use crate::args::ProfileType;
+
 lazy_static! {
     static ref SETTINGS_FILE: String =
         shellexpand::tilde("~/.local/share/levo/settings.json").to_string();
@@ -152,10 +154,4 @@ impl Override {
     fn duration(&self) -> Duration {
         Duration::hours(6)
     }
-}
-
-#[derive(Copy, Clone, Debug, Serialise, Deserialise)]
-pub(crate) enum ProfileType {
-    Work,
-    Play,
 }

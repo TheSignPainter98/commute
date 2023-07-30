@@ -1,7 +1,5 @@
-use std::error::Error;
-
 use crate::{
-    args::{ConfigOption},
+    args::{ConfigKey, ProfileType},
     settings::Settings,
 };
 
@@ -14,25 +12,26 @@ impl<'a> Configurator<'a> {
         Self { settings }
     }
 
-    pub(crate) fn config(&mut self, config_option: &ConfigOption) -> Result<(), Box<dyn Error>> {
-        match config_option {
-            ConfigOption::WorkBrowser { browser } => match browser {
-                None => println!("{}", self.settings.work().browser()),
-                Some(browser) => self.settings.work_mut().set_browser(browser.clone()),
-            },
-            ConfigOption::PlayBrowser { browser } => match browser {
-                None => println!("{}", self.settings.play().browser()),
-                Some(browser) => self.settings.play_mut().set_browser(browser.clone()),
-            },
-            ConfigOption::WorkBackgroundDir { dir } => match dir {
-                None => println!("{}", self.settings.work().background_dir()),
-                Some(dir) => self.settings.work_mut().set_background_dir(dir.clone()),
-            },
-            ConfigOption::PlayBackgroundDir { dir } => match dir {
-                None => println!("{}", self.settings.play().background_dir()),
-                Some(dir) => self.settings.play_mut().set_background_dir(dir.clone()),
-            },
+    pub(crate) fn get(&self, profile_type: &ProfileType, key: &ConfigKey) -> &str {
+        match (profile_type, key) {
+            (ProfileType::Work, ConfigKey::Browser) => self.settings.work().browser(),
+            (ProfileType::Work, ConfigKey::BackgroundDir) => self.settings.work().background_dir(),
+            (ProfileType::Play, ConfigKey::Browser) => self.settings.play().browser(),
+            (ProfileType::Play, ConfigKey::BackgroundDir) => self.settings.play().background_dir(),
         }
-        Ok(())
+    }
+
+    pub(crate) fn set(&mut self, profile_type: &ProfileType, key: &ConfigKey, value: &str) {
+        let value = value.to_owned();
+        match (profile_type, key) {
+            (ProfileType::Play, ConfigKey::Browser) => self.settings.play_mut().set_browser(value),
+            (ProfileType::Play, ConfigKey::BackgroundDir) => {
+                self.settings.play_mut().set_background_dir(value)
+            }
+            (ProfileType::Work, ConfigKey::Browser) => self.settings.work_mut().set_browser(value),
+            (ProfileType::Work, ConfigKey::BackgroundDir) => {
+                self.settings.work_mut().set_background_dir(value)
+            }
+        }
     }
 }

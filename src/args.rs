@@ -1,4 +1,5 @@
-use clap::{Parser, Subcommand};
+use clap::{Args as ClapArgs, Parser, Subcommand, ValueEnum};
+use serde::{Deserialize as Deserialise, Serialize as Serialise};
 
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about=None)]
@@ -28,16 +29,37 @@ pub(crate) enum Command {
     Work,
 
     /// Change configuration
-    #[command(subcommand)]
-    Config(ConfigOption),
+    Config(Config),
 }
 
-#[derive(Subcommand, Clone, Debug, PartialEq, Eq)]
-pub(crate) enum ConfigOption {
-    WorkBrowser { browser: Option<String> },
-    PlayBrowser { browser: Option<String> },
-    WorkBackgroundDir { dir: Option<String> },
-    PlayBackgroundDir { dir: Option<String> },
+#[derive(ClapArgs, Debug, PartialEq, Eq)]
+#[warn(missing_docs)]
+pub(crate) struct Config {
+    /// The profile to query
+    #[clap(name = "profile")]
+    pub(crate) profile_type: ProfileType,
+
+    /// The setting in the profile to query
+    #[clap(name = "setting")]
+    pub(crate) key: ConfigKey,
+
+    /// If present, set the specified setting to this value, otherwise print it
+    #[clap(name = "value")]
+    pub(crate) value: Option<String>,
+}
+
+#[derive(ValueEnum, Copy, Clone, Debug, Serialise, Deserialise, PartialEq, Eq)]
+#[warn(missing_docs)]
+pub(crate) enum ProfileType {
+    Work,
+    Play,
+}
+
+#[derive(ValueEnum, Clone, Debug, PartialEq, Eq)]
+#[warn(missing_docs)]
+pub(crate) enum ConfigKey {
+    Browser,
+    BackgroundDir,
 }
 
 #[cfg(test)]

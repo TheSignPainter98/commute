@@ -7,10 +7,10 @@ use std::error::Error;
 
 use clap::Parser;
 
-use crate::args::{Args, Command};
+use crate::args::{Args, Command, ProfileType};
 use crate::configurator::Configurator;
 use crate::profile_applier::ProfileApplier;
-use crate::settings::{ProfileType, Settings};
+use crate::settings::Settings;
 
 fn main() -> Result<(), Box<dyn Error>> {
     let args = Args::parse();
@@ -29,10 +29,14 @@ fn main() -> Result<(), Box<dyn Error>> {
             println!("{settings:#?}");
             ProfileApplier::new(&settings, ProfileType::Play).apply()
         }
-        Command::Config(config_option) => {
-            // TODO(kcza): make the config_option be either Show(field) |
-            // Set(field, value)
-            Configurator::new(&mut settings).config(config_option)
+        Command::Config(config) => {
+            let mut configurator = Configurator::new(&mut settings);
+            if let Some(value) = &config.value {
+                configurator.set(&config.profile_type, &config.key, value);
+            } else {
+                println!("{}", configurator.get(&config.profile_type, &config.key));
+            }
+            Ok(())
         }
     }?;
 

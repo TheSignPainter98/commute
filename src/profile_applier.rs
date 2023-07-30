@@ -4,7 +4,8 @@ use chrono::{Datelike, NaiveTime, Utc};
 use lazy_static::lazy_static;
 
 use crate::{
-    settings::{Override, Profile, ProfileType, Settings},
+    args::ProfileType,
+    settings::{Override, Profile, Settings},
 };
 
 lazy_static! {
