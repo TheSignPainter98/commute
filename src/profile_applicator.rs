@@ -13,12 +13,12 @@ lazy_static! {
     static ref WORK_END: NaiveTime = NaiveTime::from_hms_opt(18, 30, 00).unwrap();
 }
 
-pub(crate) struct ProfileApplier<'a> {
+pub(crate) struct ProfileApplicator<'a> {
     settings: &'a Settings,
     profile_type: ProfileType,
 }
 
-impl<'a> ProfileApplier<'a> {
+impl<'a> ProfileApplicator<'a> {
     pub(crate) fn new(settings: &'a Settings, profile_type: ProfileType) -> Self {
         Self {
             settings,
