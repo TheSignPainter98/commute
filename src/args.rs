@@ -76,10 +76,10 @@ mod test {
     }
 
     #[test]
-    fn relax() {
+    fn play() {
         assert_eq!(
             &Command::Play,
-            Args::parse_from(["levo", "relax"]).command().unwrap()
+            Args::parse_from(["levo", "play"]).command().unwrap()
         );
     }
 
