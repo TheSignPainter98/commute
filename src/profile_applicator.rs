@@ -1,5 +1,9 @@
+use std::ffi::OsStr;
+use std::fs;
+
 use chrono::{Datelike, NaiveTime, Utc};
 use lazy_static::lazy_static;
+use rand::Rng;
 
 use crate::{
     args::ProfileType,
@@ -54,7 +58,39 @@ impl<'a> ProfileApplicator<'a> {
         }
     }
 
-    fn apply_profile(&self, _profile: &Profile) -> Result<()> {
-        todo!("apply profile {:?}", self.profile_type);
+    fn apply_profile(&self, profile: &Profile) -> Result<()> {
+        self.set_browser(profile)?;
+        self.set_background(profile)?;
+
+        Ok(())
+    }
+
+    fn set_browser(&self, _profile: &Profile) -> Result<()> {
+        println!("todo: set_browser");
+        Ok(())
+    }
+
+    fn set_background(&self, profile: &Profile) -> Result<()> {
+        let bkgs;
+        let bkg = {
+            bkgs = fs::read_dir(profile.background_dir())?
+                .filter_map(|d| {
+                    if let Ok(d) = d {
+                        let path = d.path();
+                        let extension = path.extension().map(OsStr::to_str).flatten();
+                        match extension {
+                            Some("png") | Some("jpg") | Some("jpeg") => Some(path),
+                            _ => None,
+                        }
+                    } else {
+                        None
+                    }
+                })
+                .collect::<Vec<_>>();
+            &bkgs[rand::thread_rng().gen_range(0..bkgs.len())]
+        };
+
+        println!("setting background to {}...", bkg.display());
+        Ok(())
     }
 }
