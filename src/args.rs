@@ -29,11 +29,11 @@ pub(crate) enum Command {
 
     /// Change configuration
     #[command(subcommand)]
-    Config(Config),
+    Config(ConfigOption),
 }
 
 #[derive(Subcommand, Clone, Debug, PartialEq, Eq)]
-pub(crate) enum Config {
+pub(crate) enum ConfigOption {
     WorkBrowser { browser: Option<String> },
     PlayBrowser { browser: Option<String> },
     WorkBackgroundDir { dir: Option<String> },
