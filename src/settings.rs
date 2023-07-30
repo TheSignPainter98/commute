@@ -61,7 +61,7 @@ impl Settings {
         &mut self.work
     }
 
-    pub(crate) fn play(&mut self) -> &Profile {
+    pub(crate) fn play(&self) -> &Profile {
         &self.play
     }
 
