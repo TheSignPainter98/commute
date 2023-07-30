@@ -16,9 +16,9 @@ lazy_static! {
 
 #[derive(Debug, Serialise, Deserialise)]
 pub(crate) struct Settings {
-    pub(crate) work: Profile,
-    pub(crate) play: Profile,
-    pub(crate) r#override: Option<Override>,
+    work: Profile,
+    play: Profile,
+    r#override: Option<Override>,
 
     #[serde(skip)]
     dirty: bool,

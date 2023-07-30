@@ -53,8 +53,8 @@ impl<'a> ProfileApplier<'a> {
 
     pub(crate) fn apply(&self) -> Result<(), Box<dyn Error>> {
         match self.profile_type {
-            ProfileType::Work => self.apply_profile(&self.settings.work),
-            ProfileType::Play => self.apply_profile(&self.settings.play),
+            ProfileType::Work => self.apply_profile(self.settings.work()),
+            ProfileType::Play => self.apply_profile(self.settings.play()),
         }
     }
 
