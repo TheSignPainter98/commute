@@ -114,6 +114,7 @@ impl Profile {
     }
 
     pub(crate) fn set_browser(&mut self, browser: String) {
+        self.dirty = true;
         self.browser = browser;
     }
 
@@ -122,6 +123,7 @@ impl Profile {
     }
 
     pub(crate) fn set_background_dir(&mut self, background_dir: String) {
+        self.dirty = true;
         self.background_dir = background_dir;
     }
 }
