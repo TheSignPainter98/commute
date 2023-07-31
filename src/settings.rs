@@ -89,12 +89,12 @@ impl Default for Settings {
         Self {
             work: Profile {
                 browser: "/usr/bin/firefox".into(),
-                background_dir: "/home/kcza/Pictures/wallpapers/play".into(),
+                background_dir: "/home/kcza/Pictures/wallpapers/work".into(),
                 dirty: false,
             },
             play: Profile {
                 browser: "/snap/bin/brave".into(),
-                background_dir: "/home/kcza/Pictures/wallpapers/work".into(),
+                background_dir: "/home/kcza/Pictures/wallpapers/play".into(),
                 dirty: false,
             },
             r#override: None,
