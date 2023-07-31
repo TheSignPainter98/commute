@@ -1,19 +1,24 @@
 use std::{
     fs::{self, OpenOptions},
     io::Write,
-    path::Path,
+    path::PathBuf,
 };
 
 use anyhow::Context;
 use chrono::{offset::Utc, serde::ts_seconds, DateTime, Duration};
+use directories::ProjectDirs;
 use lazy_static::lazy_static;
 use serde::{Deserialize as Deserialise, Serialize as Serialise};
 
 use crate::{args::ProfileType, result::Result};
 
 lazy_static! {
-    static ref SETTINGS_FILE: String =
-        shellexpand::tilde("~/.local/share/levo/settings.json").to_string();
+    static ref SETTINGS_PATH: PathBuf = {
+        ProjectDirs::from("net", "kcza", env!("CARGO_PKG_NAME"))
+            .unwrap()
+            .data_local_dir()
+            .join("settings.json")
+    };
 }
 
 #[derive(Debug, Serialise, Deserialise)]
@@ -28,7 +33,7 @@ pub(crate) struct Settings {
 
 impl Settings {
     pub(crate) fn new() -> Result<Self> {
-        if let Ok(src) = fs::read_to_string(&SETTINGS_FILE[..]) {
+        if let Ok(src) = fs::read_to_string(&*SETTINGS_PATH) {
             Ok(serde_json::from_str(&src)?)
         } else {
             Ok(Default::default())
@@ -40,16 +45,15 @@ impl Settings {
             return Ok(());
         }
 
-        let settings_path = Path::new(&SETTINGS_FILE[..]);
-        let settings_dir = settings_path.parent().unwrap();
+        let settings_dir = SETTINGS_PATH.parent().unwrap();
         fs::create_dir_all(settings_dir).context("failed to create parent directories")?;
 
         let mut settings_file = OpenOptions::new()
             .write(true)
             .create(true)
             .truncate(true)
-            .open(settings_path)
-            .context(format!("failed to write to {}", settings_path.display()))?;
+            .open(&*SETTINGS_PATH)
+            .context(format!("failed to write to {}", SETTINGS_PATH.display()))?;
         Ok(write!(settings_file, "{}", serde_json::to_string(self)?)?)
     }
 

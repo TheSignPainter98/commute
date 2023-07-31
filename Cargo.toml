@@ -9,10 +9,10 @@ edition = "2021"
 anyhow = "1.0.72"
 chrono = { version = "0.4.26", features = ["serde"] }
 clap = { version = "4.3.19", features = ["derive", "wrap_help"] }
+directories = "5.0.1"
 gio = "0.17.10"
 lazy_static = "1.4.0"
 rand = "0.8.5"
 serde = { version = "1.0.177", features = ["derive"] }
 serde_json = "1.0.104"
-shellexpand = "3.1.0"
 thiserror = "1.0.44"
