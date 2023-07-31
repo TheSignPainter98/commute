@@ -49,5 +49,6 @@ fn run(args: Args) -> Result<()> {
     }?;
 
     settings.save()?;
+
     Ok(())
 }
