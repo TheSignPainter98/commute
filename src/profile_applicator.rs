@@ -1,7 +1,7 @@
 use std::fs;
 use std::{ffi::OsStr, process::Command};
 
-use chrono::{Datelike, NaiveTime, Utc};
+use chrono::{Datelike, Local, NaiveTime};
 use gio::prelude::SettingsExt;
 use lazy_static::lazy_static;
 use rand::seq::SliceRandom;
@@ -35,7 +35,7 @@ impl<'a> ProfileApplicator<'a> {
             .r#override()
             .and_then(Override::advise_profile)
             .unwrap_or_else(|| {
-                let now = Utc::now();
+                let now = Local::now();
                 use chrono::Weekday::*;
                 match now.weekday() {
                     Sat | Sun => ProfileType::Play,

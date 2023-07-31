@@ -5,7 +5,7 @@ use std::{
 };
 
 use anyhow::Context;
-use chrono::{offset::Utc, serde::ts_seconds, DateTime, Duration};
+use chrono::{offset::Utc, serde::ts_seconds, DateTime, Duration, Local};
 use directories::ProjectDirs;
 use lazy_static::lazy_static;
 use serde::{Deserialize as Deserialise, Serialize as Serialise};
@@ -82,7 +82,7 @@ impl Settings {
     }
 
     pub(crate) fn declare_profile_overridden(&mut self, profile_type: ProfileType) {
-        let date = Utc::now();
+        let date = Local::now().into();
         self.dirty = true;
         self.r#override = Some(Override { date, profile_type })
     }
@@ -153,7 +153,7 @@ impl Override {
     }
 
     fn is_in_force(&self) -> bool {
-        self.date < Utc::now() - self.duration()
+        self.date < Local::now() - self.duration()
     }
 
     fn duration(&self) -> Duration {
