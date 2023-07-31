@@ -5,6 +5,8 @@ mod profile_applicator;
 mod result;
 mod settings;
 
+use std::process::ExitCode;
+
 use clap::Parser;
 
 use crate::args::{Args, Command, ProfileType};
@@ -13,12 +15,13 @@ use crate::profile_applicator::ProfileApplicator;
 use crate::result::Result;
 use crate::settings::Settings;
 
-fn main() {
+fn main() -> ExitCode {
     let args = Args::parse();
-
     if let Err(e) = run(args) {
         eprintln!("{e}");
+        return ExitCode::FAILURE;
     }
+    ExitCode::SUCCESS
 }
 
 fn run(args: Args) -> Result<()> {
