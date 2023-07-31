@@ -4,7 +4,7 @@ use std::fs;
 use chrono::{Datelike, NaiveTime, Utc};
 use gio::prelude::SettingsExt;
 use lazy_static::lazy_static;
-use rand::Rng;
+use rand::seq::SliceRandom;
 
 use crate::{
     args::ProfileType,
@@ -72,31 +72,37 @@ impl<'a> ProfileApplicator<'a> {
     }
 
     fn set_background(&self, profile: &Profile) -> Result<()> {
-        let bkgs;
-        let bkg = {
-            bkgs = fs::read_dir(profile.background_dir())?
-                .filter_map(|d| {
-                    if let Ok(d) = d {
-                        let path = d.path();
-                        let extension = path.extension().map(OsStr::to_str).flatten();
-                        match extension {
-                            Some("png") | Some("jpg") | Some("jpeg") => Some(path),
-                            _ => None,
-                        }
-                    } else {
-                        None
-                    }
-                })
-                .collect::<Vec<_>>();
-            &bkgs[rand::thread_rng().gen_range(0..bkgs.len())]
+        let background_settings = gio::Settings::new("org.gnome.desktop.background");
+        let current_background_uri = background_settings.string("picture-uri-dark").to_string();
+
+        let bkg_uris = {
+            let mut bkg_uris = self.available_backgrounds(profile)?;
+            bkg_uris.shuffle(&mut rand::thread_rng());
+            bkg_uris
         };
-
-        let settings = gio::Settings::new("org.gnome.desktop.background");
-        let bkg_string = bkg.to_string_lossy();
-        settings.set_string("picture-uri", bkg_string.as_ref())?;
-        settings.set_string("picture-uri-dark", bkg_string.as_ref())?;
-        gio::Settings::sync();
-
+        if let Some(uri) = bkg_uris.iter().find(|u| *u != &current_background_uri) {
+            background_settings.set_string("picture-uri", uri.as_ref())?;
+            background_settings.set_string("picture-uri-dark", uri.as_ref())?;
+            gio::Settings::sync();
+        }
         Ok(())
+    }
+
+    fn available_backgrounds(&self, profile: &Profile) -> Result<Vec<String>> {
+        Ok(fs::read_dir(profile.background_dir())?
+            .filter_map(|d| {
+                if let Ok(d) = d {
+                    let path = d.path();
+                    let extension = path.extension().map(OsStr::to_str).flatten();
+                    match extension {
+                        Some("png") | Some("jpg") | Some("jpeg") => Some(path),
+                        _ => None,
+                    }
+                } else {
+                    None
+                }
+            })
+            .map(|p| p.to_string_lossy().to_string())
+            .collect())
     }
 }
