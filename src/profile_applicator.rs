@@ -2,6 +2,7 @@ use std::ffi::OsStr;
 use std::fs;
 
 use chrono::{Datelike, NaiveTime, Utc};
+use gio::prelude::SettingsExt;
 use lazy_static::lazy_static;
 use rand::Rng;
 
@@ -90,7 +91,11 @@ impl<'a> ProfileApplicator<'a> {
             &bkgs[rand::thread_rng().gen_range(0..bkgs.len())]
         };
 
-        println!("setting background to {}...", bkg.display());
+        let settings = gio::Settings::new("org.gnome.desktop.background");
+        settings.set_string("picture-uri", bkg.to_string_lossy().as_ref())?;
+        settings.set_string("picture-uri-dark", bkg.to_string_lossy().as_ref())?;
+        gio::Settings::sync();
+
         Ok(())
     }
 }

@@ -8,4 +8,7 @@ pub(crate) enum Error {
 
     #[error("{0}: {}", .0.root_cause())]
     AnyHowError(#[from] anyhow::Error),
+
+    #[error("glib: {0}")]
+    GLibBoolError(#[from] gio::glib::error::BoolError),
 }
