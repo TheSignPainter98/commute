@@ -81,10 +81,9 @@ impl Settings {
         self.r#override.as_ref()
     }
 
-    pub(crate) fn declare_profile_overridden(&mut self, profile_type: ProfileType) {
-        let date = Local::now().into();
+    pub(crate) fn set_override(&mut self, r#override: Override) {
         self.dirty = true;
-        self.r#override = Some(Override { date, profile_type })
+        self.r#override = Some(r#override);
     }
 }
 
@@ -145,6 +144,11 @@ pub(crate) struct Override {
 }
 
 impl Override {
+    pub(crate) fn new(profile_type: ProfileType, duration: Duration) -> Self {
+        let date = (Local::now() + duration).into();
+        Self { date, profile_type }
+    }
+
     pub(crate) fn advise_profile(&self) -> Option<ProfileType> {
         if !self.is_in_force() {
             return None;
@@ -153,10 +157,6 @@ impl Override {
     }
 
     fn is_in_force(&self) -> bool {
-        self.date < Local::now() - self.duration()
-    }
-
-    fn duration(&self) -> Duration {
-        Duration::hours(6)
+        self.date >= Local::now()
     }
 }

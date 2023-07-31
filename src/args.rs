@@ -1,3 +1,4 @@
+use chrono::Duration;
 use clap::{Args as ClapArgs, Parser, Subcommand, ValueEnum};
 use serde::{Deserialize as Deserialise, Serialize as Serialise};
 
@@ -28,8 +29,41 @@ pub(crate) enum Command {
     /// Set work presets
     Work,
 
+    /// Set play presets for a while
+    Holiday(HolidayLength),
+
     /// Change configuration
     Config(Config),
+}
+
+#[derive(ClapArgs, Debug, PartialEq, Eq)]
+#[warn(missing_docs)]
+pub(crate) struct HolidayLength {
+    number: u32,
+    unit: HolidayLengthUnit,
+}
+
+impl HolidayLength {
+    pub(crate) fn duration(&self) -> Duration {
+        let number = self.number as i64;
+        match self.unit {
+            HolidayLengthUnit::Day => Duration::days(number),
+            HolidayLengthUnit::Week => Duration::weeks(number),
+            HolidayLengthUnit::Month => Duration::weeks(4 * number),
+        }
+    }
+}
+
+#[derive(ValueEnum, Copy, Clone, Debug, PartialEq, Eq)]
+pub(crate) enum HolidayLengthUnit {
+    #[value(alias("days"))]
+    Day,
+
+    #[value(alias("weeks"))]
+    Week,
+
+    #[value(alias("months"))]
+    Month,
 }
 
 #[derive(ClapArgs, Debug, PartialEq, Eq)]

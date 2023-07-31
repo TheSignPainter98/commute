@@ -7,13 +7,20 @@ mod settings;
 
 use std::process::ExitCode;
 
+use chrono::Duration;
 use clap::Parser;
+use lazy_static::lazy_static;
+use settings::Override;
 
 use crate::args::{Args, Command, ProfileType};
 use crate::configurator::Configurator;
 use crate::profile_applicator::ProfileApplicator;
 use crate::result::Result;
 use crate::settings::Settings;
+
+lazy_static! {
+    static ref DAY_OVERRIDE_DURATION: Duration = Duration::hours(12);
+}
 
 fn main() -> ExitCode {
     let args = Args::parse();
@@ -30,11 +37,15 @@ fn run(args: Args) -> Result<()> {
     match args.command().unwrap_or(&Default::default()) {
         Command::Auto => ProfileApplicator::auto(&settings).apply(),
         Command::Work => {
-            settings.declare_profile_overridden(ProfileType::Work);
+            settings.set_override(Override::new(ProfileType::Work, *DAY_OVERRIDE_DURATION));
             ProfileApplicator::new(&settings, ProfileType::Work).apply()
         }
         Command::Play => {
-            settings.declare_profile_overridden(ProfileType::Play);
+            settings.set_override(Override::new(ProfileType::Play, *DAY_OVERRIDE_DURATION));
+            ProfileApplicator::new(&settings, ProfileType::Play).apply()
+        }
+        Command::Holiday(length) => {
+            settings.set_override(Override::new(ProfileType::Play, length.duration()));
             ProfileApplicator::new(&settings, ProfileType::Play).apply()
         }
         Command::Config(config) => {
