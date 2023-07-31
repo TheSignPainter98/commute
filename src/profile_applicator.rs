@@ -92,8 +92,9 @@ impl<'a> ProfileApplicator<'a> {
         };
 
         let settings = gio::Settings::new("org.gnome.desktop.background");
-        settings.set_string("picture-uri", bkg.to_string_lossy().as_ref())?;
-        settings.set_string("picture-uri-dark", bkg.to_string_lossy().as_ref())?;
+        let bkg_string = bkg.to_string_lossy();
+        settings.set_string("picture-uri", bkg_string.as_ref())?;
+        settings.set_string("picture-uri-dark", bkg_string.as_ref())?;
         gio::Settings::sync();
 
         Ok(())
