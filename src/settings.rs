@@ -92,12 +92,12 @@ impl Default for Settings {
     fn default() -> Self {
         Self {
             work: Profile {
-                browser: "/usr/bin/firefox".into(),
+                browser: "firefox_firefox.desktop".into(),
                 background_dir: "/home/kcza/Pictures/wallpapers/work".into(),
                 dirty: false,
             },
             play: Profile {
-                browser: "/snap/bin/brave".into(),
+                browser: "brave_brave.desktop".into(),
                 background_dir: "/home/kcza/Pictures/wallpapers/play".into(),
                 dirty: false,
             },

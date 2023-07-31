@@ -1,5 +1,5 @@
-use std::ffi::OsStr;
 use std::fs;
+use std::{ffi::OsStr, process::Command};
 
 use chrono::{Datelike, NaiveTime, Utc};
 use gio::prelude::SettingsExt;
@@ -66,9 +66,20 @@ impl<'a> ProfileApplicator<'a> {
         Ok(())
     }
 
-    fn set_browser(&self, _profile: &Profile) -> Result<()> {
-        println!("todo: set_browser");
-        Ok(())
+    fn set_browser(&self, profile: &Profile) -> Result<()> {
+        let status = Command::new("xdg-settings")
+            .arg("set")
+            .arg("default-web-browser")
+            .arg(profile.browser())
+            .status()?;
+        if !status.success() {
+            Err(crate::error::Error::ChildProcessError {
+                name: "xdg-settings".into(),
+                reason: status.code().into(),
+            })
+        } else {
+            Ok(())
+        }
     }
 
     fn set_background(&self, profile: &Profile) -> Result<()> {
