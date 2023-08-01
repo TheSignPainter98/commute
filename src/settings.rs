@@ -17,7 +17,7 @@ lazy_static! {
         ProjectDirs::from("net", "kcza", env!("CARGO_PKG_NAME"))
             .unwrap()
             .data_local_dir()
-            .join("settings.json")
+            .join("settings.yml")
     };
 }
 
@@ -34,7 +34,7 @@ pub(crate) struct Settings {
 impl Settings {
     pub(crate) fn new() -> Result<Self> {
         if let Ok(src) = fs::read_to_string(&*SETTINGS_PATH) {
-            Ok(serde_json::from_str(&src)?)
+            Ok(serde_yaml::from_str(&src)?)
         } else {
             Ok(Default::default())
         }
@@ -54,7 +54,7 @@ impl Settings {
             .truncate(true)
             .open(&*SETTINGS_PATH)
             .context(format!("failed to write to {}", SETTINGS_PATH.display()))?;
-        Ok(write!(settings_file, "{}", serde_json::to_string(self)?)?)
+        Ok(write!(settings_file, "{}", serde_yaml::to_string(self)?)?)
     }
 
     fn is_dirty(&self) -> bool {

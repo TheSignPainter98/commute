@@ -6,7 +6,7 @@ pub(crate) enum Error {
     IOError(#[from] std::io::Error),
 
     #[error("json conversion error: {0}")]
-    JSONError(#[from] serde_json::Error),
+    YAMLError(#[from] serde_yaml::Error),
 
     #[error("{0}: {}", .0.root_cause())]
     AnyHowError(#[from] anyhow::Error),

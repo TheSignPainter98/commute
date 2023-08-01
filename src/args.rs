@@ -71,11 +71,11 @@ pub(crate) enum AwayLengthUnit {
 pub(crate) struct Config {
     /// The profile to query
     #[clap(name = "profile")]
-    pub(crate) profile_type: ProfileType,
+    pub(crate) profile_type: Option<ProfileType>,
 
     /// The setting in the profile to query
     #[clap(name = "setting")]
-    pub(crate) key: ConfigKey,
+    pub(crate) key: Option<ConfigKey>,
 
     /// If present, set the specified setting to this value, otherwise print it
     #[clap(name = "value")]

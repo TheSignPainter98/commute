@@ -50,10 +50,20 @@ fn run(args: Args) -> Result<()> {
         }
         Command::Config(config) => {
             let mut configurator = Configurator::new(&mut settings);
-            if let Some(value) = &config.value {
-                configurator.set(&config.profile_type, &config.key, value);
-            } else {
-                println!("{}", configurator.get(&config.profile_type, &config.key));
+            match (&config.profile_type, &config.key, &config.value) {
+                (Some(profile_type), Some(key), Some(value)) => {
+                    configurator.set(profile_type, key, value)
+                }
+                (Some(profile_type), Some(key), _) => {
+                    println!("{}", configurator.get(profile_type, key))
+                }
+                (Some(profile_type), ..) => {
+                    print!(
+                        "{}",
+                        serde_yaml::to_string(configurator.profile(profile_type))?
+                    )
+                }
+                (None, ..) => print!("{}", serde_yaml::to_string(configurator.settings())?),
             }
             Ok(())
         }
