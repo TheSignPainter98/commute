@@ -42,7 +42,7 @@ impl<'a> ProfileApplicator<'a> {
                     Sat | Sun => ProfileType::Home,
                     _ => {
                         let time = now.time();
-                        if *WORK_START <= time && time <= *WORK_END {
+                        if *WORK_START <= time && time < *WORK_END {
                             ProfileType::Work
                         } else {
                             ProfileType::Home
