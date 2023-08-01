@@ -38,13 +38,13 @@ impl<'a> ProfileApplicator<'a> {
                 let now = Local::now();
                 use chrono::Weekday::*;
                 match now.weekday() {
-                    Sat | Sun => ProfileType::Play,
+                    Sat | Sun => ProfileType::Home,
                     _ => {
                         let time = now.time();
                         if *WORK_START <= time && time <= *WORK_END {
                             ProfileType::Work
                         } else {
-                            ProfileType::Play
+                            ProfileType::Home
                         }
                     }
                 }
@@ -55,7 +55,7 @@ impl<'a> ProfileApplicator<'a> {
     pub(crate) fn apply(&self) -> Result<()> {
         match self.profile_type {
             ProfileType::Work => self.apply_profile(self.settings.work()),
-            ProfileType::Play => self.apply_profile(self.settings.play()),
+            ProfileType::Home => self.apply_profile(self.settings.home()),
         }
     }
 

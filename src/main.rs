@@ -40,13 +40,13 @@ fn run(args: Args) -> Result<()> {
             settings.set_override(Override::new(ProfileType::Work, *DAY_OVERRIDE_DURATION));
             ProfileApplicator::new(&settings, ProfileType::Work).apply()
         }
-        Command::Play => {
-            settings.set_override(Override::new(ProfileType::Play, *DAY_OVERRIDE_DURATION));
-            ProfileApplicator::new(&settings, ProfileType::Play).apply()
+        Command::Home => {
+            settings.set_override(Override::new(ProfileType::Home, *DAY_OVERRIDE_DURATION));
+            ProfileApplicator::new(&settings, ProfileType::Home).apply()
         }
         Command::Holiday(length) => {
-            settings.set_override(Override::new(ProfileType::Play, length.duration()));
-            ProfileApplicator::new(&settings, ProfileType::Play).apply()
+            settings.set_override(Override::new(ProfileType::Home, length.duration()));
+            ProfileApplicator::new(&settings, ProfileType::Home).apply()
         }
         Command::Config(config) => {
             let mut configurator = Configurator::new(&mut settings);

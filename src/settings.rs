@@ -24,7 +24,7 @@ lazy_static! {
 #[derive(Debug, Serialise, Deserialise)]
 pub(crate) struct Settings {
     work: Profile,
-    play: Profile,
+    home: Profile,
     r#override: Option<Override>,
 
     #[serde(skip)]
@@ -58,7 +58,7 @@ impl Settings {
     }
 
     fn is_dirty(&self) -> bool {
-        self.dirty || self.work.dirty || self.play.dirty
+        self.dirty || self.work.dirty || self.home.dirty
     }
 
     pub(crate) fn work(&self) -> &Profile {
@@ -69,12 +69,12 @@ impl Settings {
         &mut self.work
     }
 
-    pub(crate) fn play(&self) -> &Profile {
-        &self.play
+    pub(crate) fn home(&self) -> &Profile {
+        &self.home
     }
 
-    pub(crate) fn play_mut(&mut self) -> &mut Profile {
-        &mut self.play
+    pub(crate) fn home_mut(&mut self) -> &mut Profile {
+        &mut self.home
     }
 
     pub(crate) fn r#override(&self) -> Option<&Override> {
@@ -95,9 +95,9 @@ impl Default for Settings {
                 background_dir: "/home/kcza/Pictures/wallpapers/work".into(),
                 dirty: false,
             },
-            play: Profile {
+            home: Profile {
                 browser: "brave_brave.desktop".into(),
-                background_dir: "/home/kcza/Pictures/wallpapers/play".into(),
+                background_dir: "/home/kcza/Pictures/wallpapers/home".into(),
                 dirty: false,
             },
             r#override: None,

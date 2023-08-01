@@ -23,13 +23,13 @@ pub(crate) enum Command {
     #[default]
     Auto,
 
-    /// Set play presets
-    Play,
+    /// Set home presets
+    Home,
 
     /// Set work presets
     Work,
 
-    /// Set play presets for a while
+    /// Set home presets for a while
     Holiday(HolidayLength),
 
     /// Change configuration
@@ -86,7 +86,7 @@ pub(crate) struct Config {
 #[warn(missing_docs)]
 pub(crate) enum ProfileType {
     Work,
-    Play,
+    Home,
 }
 
 #[derive(ValueEnum, Clone, Debug, PartialEq, Eq)]
@@ -110,10 +110,10 @@ mod test {
     }
 
     #[test]
-    fn play() {
+    fn home() {
         assert_eq!(
-            &Command::Play,
-            Args::parse_from(["commute", "play"]).command().unwrap()
+            &Command::Home,
+            Args::parse_from(["commute", "home"]).command().unwrap()
         );
     }
 
