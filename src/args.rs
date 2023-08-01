@@ -30,7 +30,7 @@ pub(crate) enum Command {
     Work,
 
     /// Set home presets for a while
-    Holiday(HolidayLength),
+    Away(AwayLength),
 
     /// Change configuration
     Config(Config),
@@ -38,24 +38,24 @@ pub(crate) enum Command {
 
 #[derive(ClapArgs, Debug, PartialEq, Eq)]
 #[warn(missing_docs)]
-pub(crate) struct HolidayLength {
+pub(crate) struct AwayLength {
     number: u32,
-    unit: HolidayLengthUnit,
+    unit: AwayLengthUnit,
 }
 
-impl HolidayLength {
+impl AwayLength {
     pub(crate) fn duration(&self) -> Duration {
         let number = self.number as i64;
         match self.unit {
-            HolidayLengthUnit::Day => Duration::days(number),
-            HolidayLengthUnit::Week => Duration::weeks(number),
-            HolidayLengthUnit::Month => Duration::weeks(4 * number),
+            AwayLengthUnit::Day => Duration::days(number),
+            AwayLengthUnit::Week => Duration::weeks(number),
+            AwayLengthUnit::Month => Duration::weeks(4 * number),
         }
     }
 }
 
 #[derive(ValueEnum, Copy, Clone, Debug, PartialEq, Eq)]
-pub(crate) enum HolidayLengthUnit {
+pub(crate) enum AwayLengthUnit {
     #[value(alias("days"))]
     Day,
 

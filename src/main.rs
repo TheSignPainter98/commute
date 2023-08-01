@@ -44,7 +44,7 @@ fn run(args: Args) -> Result<()> {
             settings.set_override(Override::new(ProfileType::Home, *DAY_OVERRIDE_DURATION));
             ProfileApplicator::new(&settings, ProfileType::Home).apply()
         }
-        Command::Holiday(length) => {
+        Command::Away(length) => {
             settings.set_override(Override::new(ProfileType::Home, length.duration()));
             ProfileApplicator::new(&settings, ProfileType::Home).apply()
         }
