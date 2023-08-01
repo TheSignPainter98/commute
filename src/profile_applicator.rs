@@ -1,6 +1,7 @@
 use std::fs;
 use std::{ffi::OsStr, process::Command};
 
+use anyhow::Context;
 use chrono::{Datelike, Local, NaiveTime};
 use gio::prelude::SettingsExt;
 use lazy_static::lazy_static;
@@ -87,7 +88,10 @@ impl<'a> ProfileApplicator<'a> {
         let current_background_uri = background_settings.string("picture-uri-dark").to_string();
 
         let bkg_uris = {
-            let mut bkg_uris = self.available_backgrounds(profile)?;
+            let mut bkg_uris = self.available_backgrounds(profile).context(format!(
+                "failed to find backgrounds in {}",
+                profile.background_dir()
+            ))?;
             bkg_uris.shuffle(&mut rand::thread_rng());
             bkg_uris
         };
