@@ -102,10 +102,10 @@ mod test {
 
     #[test]
     fn auto() {
-        assert_eq!(None, Args::parse_from(["levo"]).command());
+        assert_eq!(None, Args::parse_from(["commute"]).command());
         assert_eq!(
             &Command::Auto,
-            Args::parse_from(["levo", "auto"]).command().unwrap()
+            Args::parse_from(["commute", "auto"]).command().unwrap()
         );
     }
 
@@ -113,7 +113,7 @@ mod test {
     fn play() {
         assert_eq!(
             &Command::Play,
-            Args::parse_from(["levo", "play"]).command().unwrap()
+            Args::parse_from(["commute", "play"]).command().unwrap()
         );
     }
 
@@ -121,7 +121,7 @@ mod test {
     fn work() {
         assert_eq!(
             &Command::Work,
-            Args::parse_from(["levo", "work"]).command().unwrap()
+            Args::parse_from(["commute", "work"]).command().unwrap()
         );
     }
 
