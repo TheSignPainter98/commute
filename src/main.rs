@@ -38,16 +38,16 @@ fn run(args: Args) -> Result<()> {
 
     match args.command().unwrap_or(&Default::default()) {
         Command::Auto => ProfileApplicator::auto(&settings).apply(),
-        Command::Work => {
-            settings.set_override(Override::new(ProfileType::Work, *DAY_OVERRIDE_DURATION));
+        Command::Reset => {
+            settings.reset_override();
+            ProfileApplicator::auto(&settings).apply()
+        }
+        Command::Work { input_duration } => {
+            settings.set_override(Override::new(ProfileType::Work, input_duration.duration()));
             ProfileApplicator::new(&settings, ProfileType::Work).apply()
         }
-        Command::Home => {
-            settings.set_override(Override::new(ProfileType::Home, *DAY_OVERRIDE_DURATION));
-            ProfileApplicator::new(&settings, ProfileType::Home).apply()
-        }
-        Command::Away(length) => {
-            settings.set_override(Override::new(ProfileType::Home, length.duration()));
+        Command::Home { input_duration } => {
+            settings.set_override(Override::new(ProfileType::Home, input_duration.duration()));
             ProfileApplicator::new(&settings, ProfileType::Home).apply()
         }
         Command::Config(config) => {

@@ -95,6 +95,11 @@ impl Settings {
         self.dirty = true;
         self.r#override = Some(r#override);
     }
+
+    pub(crate) fn reset_override(&mut self) {
+        self.dirty = true;
+        self.r#override = None;
+    }
 }
 
 impl Default for Settings {

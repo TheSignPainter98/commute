@@ -18,51 +18,85 @@ impl Args {
 #[derive(Subcommand, Debug, PartialEq, Eq, Default)]
 #[warn(missing_docs)]
 pub(crate) enum Command {
-    /// Automatically
+    /// Commute according to the time. Can be overridden by calling home or work.
     #[default]
     Auto,
 
+    /// Reset any overrides
+    Reset,
+
     /// Set home presets
-    Home,
+    Home {
+        #[clap(flatten)]
+        input_duration: InputDuration,
+    },
 
     /// Set work presets
-    Work,
-
-    /// Set home presets for a while
-    Away(AwayLength),
+    Work {
+        #[clap(flatten)]
+        input_duration: InputDuration,
+    },
 
     /// Change configuration
     Config(ConfigCmd),
 }
 
-#[derive(ClapArgs, Debug, PartialEq, Eq)]
+#[derive(ClapArgs, Clone, Debug, PartialEq, Eq)]
 #[warn(missing_docs)]
-pub(crate) struct AwayLength {
-    number: u32,
-    unit: AwayLengthUnit,
+pub(crate) struct InputDuration {
+    /// The duration of the stay
+    #[arg(value_name = "duration", requires = "unit")]
+    number: Option<u32>,
+
+    /// The units of the duration of the stay
+    #[arg(value_name = "units")]
+    unit: Option<InputDurationUnit>,
 }
 
-impl AwayLength {
+impl InputDuration {
     pub(crate) fn duration(&self) -> Duration {
-        let number = self.number as i64;
-        match self.unit {
-            AwayLengthUnit::Day => Duration::days(number),
-            AwayLengthUnit::Week => Duration::weeks(number),
-            AwayLengthUnit::Month => Duration::weeks(4 * number),
+        match self.number {
+            Some(number) => {
+                let number = number as i64;
+                use InputDurationUnit::*;
+                match self.unit.expect("internal error: number with no unit") {
+                    Minutes => Duration::minutes(number),
+                    Hours => Duration::hours(number),
+                    Days => Duration::days(number),
+                    Weeks => Duration::weeks(number),
+                    Months => Duration::weeks(4 * number),
+                }
+            }
+            None => Self::default().duration(),
+        }
+    }
+}
+
+impl Default for InputDuration {
+    fn default() -> Self {
+        Self {
+            number: Some(10),
+            unit: Some(InputDurationUnit::Hours),
         }
     }
 }
 
 #[derive(ValueEnum, Copy, Clone, Debug, PartialEq, Eq)]
-pub(crate) enum AwayLengthUnit {
-    #[value(alias("days"))]
-    Day,
+pub(crate) enum InputDurationUnit {
+    #[value(alias = "minute")]
+    Minutes,
 
-    #[value(alias("weeks"))]
-    Week,
+    #[value(alias = "hour")]
+    Hours,
 
-    #[value(alias("months"))]
-    Month,
+    #[value(alias = "day")]
+    Days,
+
+    #[value(alias = "week")]
+    Weeks,
+
+    #[value(alias = "month")]
+    Months,
 }
 
 #[derive(ClapArgs, Clone, Debug, PartialEq, Eq)]
