@@ -1,6 +1,5 @@
 use chrono::Duration;
 use clap::{Args as ClapArgs, Parser, Subcommand, ValueEnum};
-use serde::{Deserialize as Deserialise, Serialize as Serialise};
 
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about=None)]
@@ -33,7 +32,7 @@ pub(crate) enum Command {
     Away(AwayLength),
 
     /// Change configuration
-    Config(Config),
+    Config(ConfigCmd),
 }
 
 #[derive(ClapArgs, Debug, PartialEq, Eq)]
@@ -66,13 +65,28 @@ pub(crate) enum AwayLengthUnit {
     Month,
 }
 
-#[derive(ClapArgs, Debug, PartialEq, Eq)]
-#[warn(missing_docs)]
-pub(crate) struct Config {
-    /// The profile to query
-    #[clap(name = "profile")]
-    pub(crate) profile_type: Option<ProfileType>,
+#[derive(ClapArgs, Clone, Debug, PartialEq, Eq)]
+pub(crate) struct ConfigCmd {
+    #[command(subcommand)]
+    pub(crate) config: Option<Config>,
+}
 
+#[derive(Subcommand, Clone, Debug, PartialEq, Eq)]
+#[warn(missing_docs)]
+pub(crate) enum Config {
+    /// Interact with home profile config
+    Home(ProfileConfig),
+
+    /// Interact with work profile config
+    Work(ProfileConfig),
+
+    /// Interact with work hours
+    WorkHours(WorkHoursConfig),
+}
+
+#[derive(ClapArgs, Clone, Debug, PartialEq, Eq)]
+#[warn(missing_docs)]
+pub(crate) struct ProfileConfig {
     /// The setting in the profile to query
     #[clap(name = "setting")]
     pub(crate) key: Option<ConfigKey>,
@@ -82,18 +96,25 @@ pub(crate) struct Config {
     pub(crate) value: Option<String>,
 }
 
-#[derive(ValueEnum, Copy, Clone, Debug, Serialise, Deserialise, PartialEq, Eq)]
-#[warn(missing_docs)]
-pub(crate) enum ProfileType {
-    Work,
-    Home,
-}
-
 #[derive(ValueEnum, Clone, Debug, PartialEq, Eq)]
 #[warn(missing_docs)]
 pub(crate) enum ConfigKey {
     Browser,
     BackgroundDir,
+}
+
+#[derive(ClapArgs, Clone, Debug, PartialEq, Eq)]
+#[warn(missing_docs)]
+pub(crate) struct WorkHoursConfig {
+    pub(crate) transition: Option<WorkHoursTransition>,
+    pub(crate) time: Option<String>,
+}
+
+#[derive(ValueEnum, Copy, Clone, Debug, PartialEq, Eq)]
+#[warn(missing_docs)]
+pub(crate) enum WorkHoursTransition {
+    ClockOn,
+    ClockOff,
 }
 
 #[cfg(test)]

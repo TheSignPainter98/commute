@@ -7,16 +7,18 @@ mod settings;
 
 use std::process::ExitCode;
 
+use anyhow::Context;
+use args::{Config, ConfigKey, ProfileConfig, WorkHoursConfig};
 use chrono::Duration;
 use clap::Parser;
 use lazy_static::lazy_static;
 use settings::Override;
 
-use crate::args::{Args, Command, ProfileType};
+use crate::args::{Args, Command};
 use crate::configurator::Configurator;
 use crate::profile_applicator::ProfileApplicator;
 use crate::result::Result;
-use crate::settings::Settings;
+use crate::settings::{ProfileType, Settings};
 
 lazy_static! {
     static ref DAY_OVERRIDE_DURATION: Duration = Duration::hours(12);
@@ -50,20 +52,36 @@ fn run(args: Args) -> Result<()> {
         }
         Command::Config(config) => {
             let mut configurator = Configurator::new(&mut settings);
-            match (&config.profile_type, &config.key, &config.value) {
-                (Some(profile_type), Some(key), Some(value)) => {
-                    configurator.set(profile_type, key, value)
+            match &config.config {
+                Some(Config::Work(ProfileConfig { key, value })) => {
+                    handle_profile_config(
+                        &mut configurator,
+                        ProfileType::Work,
+                        key.as_ref(),
+                        value.as_deref(),
+                    )?;
                 }
-                (Some(profile_type), Some(key), _) => {
-                    println!("{}", configurator.get(profile_type, key))
+                Some(Config::Home(ProfileConfig { key, value })) => {
+                    handle_profile_config(
+                        &mut configurator,
+                        ProfileType::Home,
+                        key.as_ref(),
+                        value.as_deref(),
+                    )?;
                 }
-                (Some(profile_type), ..) => {
-                    print!(
-                        "{}",
-                        serde_yaml::to_string(configurator.profile(profile_type))?
-                    )
+                Some(Config::WorkHours(WorkHoursConfig { transition, time })) => {
+                    match (transition, time) {
+                        (Some(transition), Some(time)) => {
+                            let time = time.parse().context("time format must be hh:mm:ss")?;
+                            configurator.set_clocking_time(*transition, time)
+                        }
+                        (Some(transition), _) => {
+                            println!("{}", configurator.clocking_time(*transition));
+                        }
+                        _ => print!("{}", serde_yaml::to_string(configurator.clocking_times())?),
+                    }
                 }
-                (None, ..) => print!("{}", serde_yaml::to_string(configurator.settings())?),
+                None => print!("{}", serde_yaml::to_string(configurator.settings())?),
             }
             Ok(())
         }
@@ -71,5 +89,22 @@ fn run(args: Args) -> Result<()> {
 
     settings.save()?;
 
+    Ok(())
+}
+
+fn handle_profile_config(
+    configurator: &mut Configurator,
+    profile_type: ProfileType,
+    key: Option<&ConfigKey>,
+    value: Option<&str>,
+) -> Result<()> {
+    match (key, value) {
+        (Some(key), Some(value)) => configurator.set(profile_type, key, value),
+        (Some(key), _) => println!("{}", configurator.get(profile_type, key)),
+        _ => print!(
+            "{}",
+            serde_yaml::to_string(configurator.profile(profile_type))?
+        ),
+    }
     Ok(())
 }

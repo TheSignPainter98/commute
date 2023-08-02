@@ -19,6 +19,9 @@ pub(crate) enum Error {
         name: String,
         reason: ChildProcessExit,
     },
+
+    #[error("failed to parse time: {0}")]
+    TimeParseError(#[from] chrono::format::ParseError),
 }
 
 #[derive(Debug)]

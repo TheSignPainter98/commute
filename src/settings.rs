@@ -5,12 +5,12 @@ use std::{
 };
 
 use anyhow::Context;
-use chrono::{offset::Utc, serde::ts_seconds, DateTime, Duration, Local};
+use chrono::{offset::Utc, serde::ts_seconds, DateTime, Duration, Local, NaiveTime};
 use directories::ProjectDirs;
 use lazy_static::lazy_static;
 use serde::{Deserialize as Deserialise, Serialize as Serialise};
 
-use crate::{args::ProfileType, result::Result};
+use crate::result::Result;
 
 lazy_static! {
     static ref SETTINGS_PATH: PathBuf = {
@@ -22,9 +22,11 @@ lazy_static! {
 }
 
 #[derive(Debug, Serialise, Deserialise)]
+#[serde(rename_all = "kebab-case")]
 pub(crate) struct Settings {
     work: Profile,
     home: Profile,
+    work_hours: WorkHours,
     r#override: Option<Override>,
 
     #[serde(skip)]
@@ -58,7 +60,7 @@ impl Settings {
     }
 
     fn is_dirty(&self) -> bool {
-        self.dirty || self.work.dirty || self.home.dirty
+        self.dirty || self.work.dirty || self.home.dirty || self.work_hours.dirty
     }
 
     pub(crate) fn work(&self) -> &Profile {
@@ -77,6 +79,14 @@ impl Settings {
         &mut self.home
     }
 
+    pub(crate) fn work_hours(&self) -> &WorkHours {
+        &self.work_hours
+    }
+
+    pub(crate) fn work_hours_mut(&mut self) -> &mut WorkHours {
+        &mut self.work_hours
+    }
+
     pub(crate) fn r#override(&self) -> Option<&Override> {
         self.r#override.as_ref()
     }
@@ -89,6 +99,11 @@ impl Settings {
 
 impl Default for Settings {
     fn default() -> Self {
+        lazy_static! {
+            static ref DEFAULT_WORK_START: NaiveTime = NaiveTime::from_hms_opt(6, 0, 0).unwrap();
+            static ref DEFAULT_WORK_END: NaiveTime = NaiveTime::from_hms_opt(18, 30, 00).unwrap();
+        };
+
         Self {
             work: Profile {
                 browser: "firefox_firefox.desktop".into(),
@@ -100,6 +115,11 @@ impl Default for Settings {
                 background_dir: "/home/kcza/Pictures/wallpapers/home".into(),
                 dirty: false,
             },
+            work_hours: WorkHours {
+                clock_on: *DEFAULT_WORK_START,
+                clock_off: *DEFAULT_WORK_END,
+                dirty: false,
+            },
             r#override: None,
             dirty: false,
         }
@@ -107,6 +127,7 @@ impl Default for Settings {
 }
 
 #[derive(Debug, Serialise, Deserialise)]
+#[serde(rename_all = "kebab-case")]
 pub(crate) struct Profile {
     browser: String,
     background_dir: String,
@@ -135,7 +156,46 @@ impl Profile {
     }
 }
 
+#[derive(Copy, Clone, Debug, Serialise, Deserialise, PartialEq, Eq)]
+#[serde(rename_all = "kebab-case")]
+#[warn(missing_docs)]
+pub(crate) enum ProfileType {
+    Work,
+    Home,
+}
+
 #[derive(Debug, Serialise, Deserialise)]
+#[serde(rename_all = "kebab-case")]
+pub(crate) struct WorkHours {
+    clock_on: NaiveTime,
+    clock_off: NaiveTime,
+
+    #[serde(skip)]
+    dirty: bool,
+}
+
+impl WorkHours {
+    pub(crate) fn start(&self) -> &NaiveTime {
+        &self.clock_on
+    }
+
+    pub(crate) fn set_start(&mut self, start: NaiveTime) {
+        self.dirty = true;
+        self.clock_on = start;
+    }
+
+    pub(crate) fn end(&self) -> &NaiveTime {
+        &self.clock_off
+    }
+
+    pub(crate) fn set_end(&mut self, end: NaiveTime) {
+        self.dirty = true;
+        self.clock_off = end;
+    }
+}
+
+#[derive(Debug, Serialise, Deserialise)]
+#[serde(rename_all = "kebab-case")]
 pub(crate) struct Override {
     profile_type: ProfileType,
 

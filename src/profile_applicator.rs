@@ -2,21 +2,14 @@ use std::fs;
 use std::{ffi::OsStr, process::Command};
 
 use anyhow::Context;
-use chrono::{Datelike, Local, NaiveTime};
+use chrono::{Datelike, Local};
 use gio::prelude::SettingsExt;
-use lazy_static::lazy_static;
 use rand::seq::SliceRandom;
 
 use crate::{
-    args::ProfileType,
     result::Result,
-    settings::{Override, Profile, Settings},
+    settings::{Override, Profile, ProfileType, Settings},
 };
-
-lazy_static! {
-    static ref WORK_START: NaiveTime = NaiveTime::from_hms_opt(6, 0, 0).unwrap();
-    static ref WORK_END: NaiveTime = NaiveTime::from_hms_opt(18, 30, 00).unwrap();
-}
 
 pub(crate) struct ProfileApplicator<'a> {
     settings: &'a Settings,
@@ -41,8 +34,9 @@ impl<'a> ProfileApplicator<'a> {
                 match now.weekday() {
                     Sat | Sun => ProfileType::Home,
                     _ => {
-                        let time = now.time();
-                        if *WORK_START <= time && time < *WORK_END {
+                        let time = &now.time();
+                        let work_hours = settings.work_hours();
+                        if work_hours.start() <= time && time < work_hours.end() {
                             ProfileType::Work
                         } else {
                             ProfileType::Home
