@@ -58,6 +58,7 @@ impl<'a> ProfileApplicator<'a> {
         self.set_browser(profile)?;
         self.set_background(profile)?;
 
+        gio::Settings::sync();
         Ok(())
     }
 
@@ -92,7 +93,6 @@ impl<'a> ProfileApplicator<'a> {
         if let Some(uri) = bkg_uris.iter().find(|u| *u != &current_background_uri) {
             background_settings.set_string("picture-uri", uri.as_ref())?;
             background_settings.set_string("picture-uri-dark", uri.as_ref())?;
-            gio::Settings::sync();
         }
         Ok(())
     }
