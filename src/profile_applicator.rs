@@ -55,8 +55,9 @@ impl<'a> ProfileApplicator<'a> {
     }
 
     fn apply_profile(&self, profile: &Profile) -> Result<()> {
-        self.set_browser(profile)?;
-        self.set_background(profile)?;
+        self.set_browser(profile).context("failed to set profile")?;
+        self.set_background(profile)
+            .context("failed to set browser")?;
 
         gio::Settings::sync();
         Ok(())
@@ -91,8 +92,12 @@ impl<'a> ProfileApplicator<'a> {
             bkg_uris
         };
         if let Some(uri) = bkg_uris.iter().find(|u| *u != &current_background_uri) {
-            background_settings.set_string("picture-uri", uri.as_ref())?;
-            background_settings.set_string("picture-uri-dark", uri.as_ref())?;
+            background_settings
+                .set_string("picture-uri", uri.as_ref())
+                .context("failed to set picture-uri")?;
+            background_settings
+                .set_string("picture-uri-dark", uri.as_ref())
+                .context("failed to set picture-uri")?;
         }
         Ok(())
     }
