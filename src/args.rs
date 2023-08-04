@@ -23,7 +23,7 @@ pub(crate) enum Command {
     Auto,
 
     /// Reset any overrides
-    Reset,
+    Restore,
 
     /// Set home presets
     Home {

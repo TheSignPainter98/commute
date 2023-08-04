@@ -34,11 +34,11 @@ fn main() -> ExitCode {
 }
 
 fn run(args: Args) -> Result<()> {
-    let mut settings = Settings::new()?;
+    let mut settings = Settings::new().context("failed to read settings")?;
 
     match args.command().unwrap_or(&Default::default()) {
         Command::Auto => ProfileApplicator::auto(&settings).apply(),
-        Command::Reset => {
+        Command::Restore => {
             settings.reset_override();
             ProfileApplicator::auto(&settings).apply()
         }
