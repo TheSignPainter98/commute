@@ -135,6 +135,8 @@ pub(crate) struct ProfileConfig {
 pub(crate) enum ConfigKey {
     Browser,
     BackgroundDir,
+    GtkTheme,
+    IconTheme,
 }
 
 #[derive(ClapArgs, Clone, Debug, PartialEq, Eq)]

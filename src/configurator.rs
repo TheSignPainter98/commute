@@ -17,18 +17,24 @@ impl<'a> Configurator<'a> {
 
     pub(crate) fn get(&self, profile_type: ProfileType, key: &ConfigKey) -> &str {
         let profile = self.profile(profile_type);
+        use ConfigKey::*;
         match key {
-            ConfigKey::Browser => profile.browser(),
-            ConfigKey::BackgroundDir => profile.background_dir(),
+            Browser => profile.browser(),
+            BackgroundDir => profile.background_dir(),
+            GtkTheme => profile.theme().gtk(),
+            IconTheme => profile.theme().icons(),
         }
     }
 
     pub(crate) fn set(&mut self, profile_type: ProfileType, key: &ConfigKey, value: &str) {
         let value = value.to_owned();
         let profile = self.profile_mut(profile_type);
+        use ConfigKey::*;
         match key {
-            ConfigKey::Browser => profile.set_browser(value),
-            ConfigKey::BackgroundDir => profile.set_background_dir(value),
+            Browser => profile.set_browser(value),
+            BackgroundDir => profile.set_background_dir(value),
+            GtkTheme => profile.theme_mut().set_gtk(value),
+            IconTheme => profile.theme_mut().set_icons(value),
         }
     }
 

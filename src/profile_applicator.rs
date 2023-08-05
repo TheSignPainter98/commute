@@ -58,6 +58,8 @@ impl<'a> ProfileApplicator<'a> {
         self.set_browser(profile).context("failed to set profile")?;
         self.set_background(profile)
             .context("failed to set browser")?;
+        self.change_colour_scheme(profile)
+            .context("failed to set colour scheme")?;
 
         gio::Settings::sync();
         Ok(())
@@ -118,5 +120,18 @@ impl<'a> ProfileApplicator<'a> {
             })
             .map(|p| p.to_string_lossy().to_string())
             .collect())
+    }
+
+    fn change_colour_scheme(&self, profile: &Profile) -> Result<()> {
+        let desktop_settings = gio::Settings::new("org.gnome.desktop.interface");
+        let theme = profile.theme();
+        desktop_settings
+            .set_string("gtk-theme", theme.gtk())
+            .context("failed to set gtk theme")?;
+        desktop_settings
+            .set_string("icon-theme", theme.icons())
+            .context("failed to set icon theme")?;
+
+        Ok(())
     }
 }

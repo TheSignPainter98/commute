@@ -60,7 +60,7 @@ impl Settings {
     }
 
     fn is_dirty(&self) -> bool {
-        self.dirty || self.work.dirty || self.home.dirty || self.work_hours.dirty
+        self.dirty || self.work.dirty() || self.home.dirty() || self.work_hours.dirty()
     }
 
     pub(crate) fn work(&self) -> &Profile {
@@ -114,11 +114,21 @@ impl Default for Settings {
                 browser: "firefox_firefox.desktop".into(),
                 background_dir: "/home/kcza/Pictures/wallpapers/work".into(),
                 dirty: false,
+                theme: Theme {
+                    gtk: "Yaru-dark".into(),
+                    icons: "Yaru".into(),
+                    dirty: false,
+                },
             },
             home: Profile {
                 browser: "brave_brave.desktop".into(),
                 background_dir: "/home/kcza/Pictures/wallpapers/home".into(),
                 dirty: false,
+                theme: Theme {
+                    gtk: "Yaru-viridian-dark".into(),
+                    icons: "Yaru-viridian".into(),
+                    dirty: false,
+                },
             },
             work_hours: WorkHours {
                 clock_on: *DEFAULT_WORK_START,
@@ -136,6 +146,9 @@ impl Default for Settings {
 pub(crate) struct Profile {
     browser: String,
     background_dir: String,
+
+    #[serde(flatten)]
+    theme: Theme,
 
     #[serde(skip)]
     dirty: bool,
@@ -159,6 +172,18 @@ impl Profile {
         self.dirty = true;
         self.background_dir = background_dir;
     }
+
+    pub(crate) fn theme(&self) -> &Theme {
+        &self.theme
+    }
+
+    pub(crate) fn theme_mut(&mut self) -> &mut Theme {
+        &mut self.theme
+    }
+
+    pub(crate) fn dirty(&self) -> bool {
+        self.dirty || self.theme.dirty()
+    }
 }
 
 #[derive(Copy, Clone, Debug, Serialise, Deserialise, PartialEq, Eq)]
@@ -167,6 +192,43 @@ impl Profile {
 pub(crate) enum ProfileType {
     Work,
     Home,
+}
+
+#[derive(Clone, Debug, Serialise, Deserialise, PartialEq, Eq)]
+#[serde(rename_all = "kebab-case")]
+#[warn(missing_docs)]
+pub(crate) struct Theme {
+    #[serde(rename = "gtk-theme")]
+    gtk: String,
+    #[serde(rename = "icon-theme")]
+    icons: String,
+
+    #[serde(skip)]
+    dirty: bool,
+}
+
+impl Theme {
+    pub(crate) fn gtk(&self) -> &str {
+        &self.gtk
+    }
+
+    pub(crate) fn set_gtk(&mut self, gtk: String) {
+        self.dirty = true;
+        self.gtk = gtk;
+    }
+
+    pub(crate) fn icons(&self) -> &str {
+        &self.icons
+    }
+
+    pub(crate) fn set_icons(&mut self, icons: String) {
+        self.dirty = true;
+        self.icons = icons;
+    }
+
+    pub(crate) fn dirty(&self) -> bool {
+        self.dirty
+    }
 }
 
 #[derive(Debug, Serialise, Deserialise)]
@@ -196,6 +258,10 @@ impl WorkHours {
     pub(crate) fn set_end(&mut self, end: NaiveTime) {
         self.dirty = true;
         self.clock_off = end;
+    }
+
+    pub(crate) fn dirty(&self) -> bool {
+        self.dirty
     }
 }
 
