@@ -1,6 +1,7 @@
 use std::fmt::Display;
 
 #[derive(thiserror::Error, Debug)]
+#[non_exhaustive]
 pub(crate) enum Error {
     #[error("io error: {0}")]
     IOError(#[from] std::io::Error),
