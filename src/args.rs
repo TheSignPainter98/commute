@@ -18,12 +18,12 @@ impl Args {
 #[derive(Subcommand, Debug, PartialEq, Eq, Default)]
 #[warn(missing_docs)]
 pub(crate) enum Command {
-    /// Commute according to the time. Can be overridden by calling home or work.
+    /// Guess the place to commute to, can be overridden by calling home or work.
     #[default]
     Auto,
 
-    /// Reset any overrides
-    Restore,
+    /// Revert overrides and guess where to commute to the normal place
+    Norm,
 
     /// Set home presets
     Home {

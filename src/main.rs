@@ -38,7 +38,7 @@ fn run(args: Args) -> Result<()> {
 
     match args.command().unwrap_or(&Default::default()) {
         Command::Auto => ProfileApplicator::auto(&settings).apply(),
-        Command::Restore => {
+        Command::Norm => {
             settings.reset_override();
             ProfileApplicator::auto(&settings).apply()
         }
