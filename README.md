@@ -6,7 +6,7 @@ Well look no further, for `commute` is a small program to automatically change t
 
 Run just `commute` to automatically choose whether to set a work or a home profile.
 Doing so will set your colour scheme, browser and select a random background image.
-For the best experience, put this in a cron job.
+For the best experience, set this as a startup program and also run it in a cron job.
 
 Run `commute home` to set the home presets and override the automatic choice for the next few hours (or a specified length of time).
 
