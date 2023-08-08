@@ -66,10 +66,12 @@ impl<'a> ProfileApplicator<'a> {
     }
 
     fn set_browser(&self, profile: &Profile) -> Result<()> {
+        let Some(browser) = profile.browser() else { return Ok(()); };
+
         let status = Command::new("xdg-settings")
             .arg("set")
             .arg("default-web-browser")
-            .arg(profile.browser())
+            .arg(browser)
             .status()?;
         if !status.success() {
             Err(crate::error::Error::ChildProcessError {
@@ -82,14 +84,15 @@ impl<'a> ProfileApplicator<'a> {
     }
 
     fn set_background(&self, profile: &Profile) -> Result<()> {
+        let Some(background_dir) = profile.background_dir() else { return Ok(()); };
+
         let background_settings = gio::Settings::new("org.gnome.desktop.background");
         let current_background_uri = background_settings.string("picture-uri-dark").to_string();
 
         let bkg_uris = {
-            let mut bkg_uris = self.available_backgrounds(profile).context(format!(
-                "failed to find backgrounds in {}",
-                profile.background_dir()
-            ))?;
+            let mut bkg_uris = self
+                .available_backgrounds(background_dir)
+                .context(format!("failed to find backgrounds in {}", background_dir))?;
             bkg_uris.shuffle(&mut rand::thread_rng());
             bkg_uris
         };
@@ -104,8 +107,8 @@ impl<'a> ProfileApplicator<'a> {
         Ok(())
     }
 
-    fn available_backgrounds(&self, profile: &Profile) -> Result<Vec<String>> {
-        Ok(fs::read_dir(profile.background_dir())?
+    fn available_backgrounds(&self, background_dir: &str) -> Result<Vec<String>> {
+        Ok(fs::read_dir(background_dir)?
             .filter_map(|d| {
                 if let Ok(d) = d {
                     let path = d.path();
@@ -125,12 +128,18 @@ impl<'a> ProfileApplicator<'a> {
     fn change_colour_scheme(&self, profile: &Profile) -> Result<()> {
         let desktop_settings = gio::Settings::new("org.gnome.desktop.interface");
         let theme = profile.theme();
-        desktop_settings
-            .set_string("gtk-theme", theme.gtk())
-            .context("failed to set gtk theme")?;
-        desktop_settings
-            .set_string("icon-theme", theme.icons())
-            .context("failed to set icon theme")?;
+
+        if let Some(gtk_theme) = theme.gtk() {
+            desktop_settings
+                .set_string("gtk-theme", gtk_theme)
+                .context("failed to set gtk theme")?;
+        }
+
+        if let Some(icon_theme) = theme.icons() {
+            desktop_settings
+                .set_string("icon-theme", icon_theme)
+                .context("failed to set icon theme")?;
+        }
 
         Ok(())
     }

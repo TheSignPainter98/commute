@@ -100,7 +100,7 @@ fn handle_profile_config(
 ) -> Result<()> {
     match (key, value) {
         (Some(key), Some(value)) => configurator.set(profile_type, key, value),
-        (Some(key), _) => println!("{}", configurator.get(profile_type, key)),
+        (Some(key), _) => println!("{}", configurator.get(profile_type, key).unwrap_or("none")),
         _ => print!(
             "{}",
             serde_yaml::to_string(configurator.profile(profile_type))?

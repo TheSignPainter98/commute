@@ -111,22 +111,22 @@ impl Default for Settings {
 
         Self {
             work: Profile {
-                browser: "firefox_firefox.desktop".into(),
-                background_dir: "/home/kcza/Pictures/wallpapers/work".into(),
+                browser: None,
+                background_dir: None,
                 dirty: false,
                 theme: Theme {
-                    gtk: "Yaru-dark".into(),
-                    icons: "Yaru".into(),
+                    gtk: None,
+                    icons: None,
                     dirty: false,
                 },
             },
             home: Profile {
-                browser: "brave_brave.desktop".into(),
-                background_dir: "/home/kcza/Pictures/wallpapers/home".into(),
+                browser: None,
+                background_dir: None,
                 dirty: false,
                 theme: Theme {
-                    gtk: "Yaru-viridian-dark".into(),
-                    icons: "Yaru-viridian".into(),
+                    gtk: None,
+                    icons: None,
                     dirty: false,
                 },
             },
@@ -144,8 +144,8 @@ impl Default for Settings {
 #[derive(Debug, Serialise, Deserialise)]
 #[serde(rename_all = "kebab-case")]
 pub(crate) struct Profile {
-    browser: String,
-    background_dir: String,
+    browser: Option<String>,
+    background_dir: Option<String>,
 
     #[serde(flatten)]
     theme: Theme,
@@ -155,20 +155,20 @@ pub(crate) struct Profile {
 }
 
 impl Profile {
-    pub(crate) fn browser(&self) -> &str {
-        &self.browser
+    pub(crate) fn browser(&self) -> Option<&str> {
+        self.browser.as_deref()
     }
 
-    pub(crate) fn set_browser(&mut self, browser: String) {
+    pub(crate) fn set_browser(&mut self, browser: Option<String>) {
         self.dirty = true;
         self.browser = browser;
     }
 
-    pub(crate) fn background_dir(&self) -> &str {
-        &self.background_dir
+    pub(crate) fn background_dir(&self) -> Option<&str> {
+        self.background_dir.as_deref()
     }
 
-    pub(crate) fn set_background_dir(&mut self, background_dir: String) {
+    pub(crate) fn set_background_dir(&mut self, background_dir: Option<String>) {
         self.dirty = true;
         self.background_dir = background_dir;
     }
@@ -199,29 +199,29 @@ pub(crate) enum ProfileType {
 #[warn(missing_docs)]
 pub(crate) struct Theme {
     #[serde(rename = "gtk-theme")]
-    gtk: String,
+    gtk: Option<String>,
     #[serde(rename = "icon-theme")]
-    icons: String,
+    icons: Option<String>,
 
     #[serde(skip)]
     dirty: bool,
 }
 
 impl Theme {
-    pub(crate) fn gtk(&self) -> &str {
-        &self.gtk
+    pub(crate) fn gtk(&self) -> Option<&str> {
+        self.gtk.as_deref()
     }
 
-    pub(crate) fn set_gtk(&mut self, gtk: String) {
+    pub(crate) fn set_gtk(&mut self, gtk: Option<String>) {
         self.dirty = true;
         self.gtk = gtk;
     }
 
-    pub(crate) fn icons(&self) -> &str {
-        &self.icons
+    pub(crate) fn icons(&self) -> Option<&str> {
+        self.icons.as_deref()
     }
 
-    pub(crate) fn set_icons(&mut self, icons: String) {
+    pub(crate) fn set_icons(&mut self, icons: Option<String>) {
         self.dirty = true;
         self.icons = icons;
     }

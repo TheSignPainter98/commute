@@ -15,7 +15,7 @@ impl<'a> Configurator<'a> {
         Self { settings }
     }
 
-    pub(crate) fn get(&self, profile_type: ProfileType, key: &ConfigKey) -> &str {
+    pub(crate) fn get(&self, profile_type: ProfileType, key: &ConfigKey) -> Option<&str> {
         let profile = self.profile(profile_type);
         use ConfigKey::*;
         match key {
@@ -27,7 +27,11 @@ impl<'a> Configurator<'a> {
     }
 
     pub(crate) fn set(&mut self, profile_type: ProfileType, key: &ConfigKey, value: &str) {
-        let value = value.to_owned();
+        let value = if value.to_lowercase() != "none" {
+            Some(value.to_string())
+        } else {
+            None
+        };
         let profile = self.profile_mut(profile_type);
         use ConfigKey::*;
         match key {
