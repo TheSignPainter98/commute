@@ -64,7 +64,8 @@ impl InputDuration {
                     Hours => Duration::hours(number),
                     Days => Duration::days(number),
                     Weeks => Duration::weeks(number),
-                    Months => Duration::weeks(4 * number),
+                    Months => Duration::days(30 * number), // Approximate
+                    Years => Duration::days(365 * number), // Approximate
                 }
             }
             None => Self::default().duration(),
@@ -97,6 +98,9 @@ pub(crate) enum InputDurationUnit {
 
     #[value(alias = "month")]
     Months,
+
+    #[value(alias = "year")]
+    Years,
 }
 
 #[derive(ClapArgs, Clone, Debug, PartialEq, Eq)]
