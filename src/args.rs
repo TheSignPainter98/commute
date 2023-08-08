@@ -1,5 +1,6 @@
 use chrono::Duration;
 use clap::{Args as ClapArgs, Parser, Subcommand, ValueEnum};
+use kinded::Kinded;
 
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about=None)]
@@ -15,7 +16,7 @@ impl Args {
     }
 }
 
-#[derive(Subcommand, Debug, PartialEq, Eq, Default)]
+#[derive(Subcommand, Kinded, Debug, PartialEq, Eq, Default)]
 #[warn(missing_docs)]
 pub(crate) enum Command {
     /// Guess the place to commute to, can be overridden by calling home or work.
@@ -39,6 +40,23 @@ pub(crate) enum Command {
 
     /// Change configuration
     Config(ConfigCmd),
+}
+
+#[cfg(test)]
+impl Command {
+    fn input_duration(&self) -> Option<&InputDuration> {
+        match self {
+            Self::Work { input_duration } | Self::Home { input_duration } => Some(input_duration),
+            _ => None,
+        }
+    }
+
+    fn config(&self) -> Option<&ConfigCmd> {
+        match self {
+            Self::Config(cfg) => Some(cfg),
+            _ => None,
+        }
+    }
 }
 
 #[derive(ClapArgs, Clone, Debug, PartialEq, Eq)]
@@ -134,7 +152,7 @@ pub(crate) struct ProfileConfig {
     pub(crate) value: Option<String>,
 }
 
-#[derive(ValueEnum, Clone, Debug, PartialEq, Eq)]
+#[derive(ValueEnum, Copy, Clone, Debug, PartialEq, Eq)]
 #[warn(missing_docs)]
 pub(crate) enum ConfigKey {
     Browser,
@@ -162,36 +180,207 @@ mod test {
     use super::*;
 
     #[test]
+    fn default() {
+        assert_eq!(CommandKind::Auto, Command::default().kind())
+    }
+
+    #[test]
     fn auto() {
         assert_eq!(None, Args::parse_from(["commute"]).command());
         assert_eq!(
-            &Command::Auto,
-            Args::parse_from(["commute", "auto"]).command().unwrap()
+            CommandKind::Auto,
+            Args::parse_from(["commute", "auto"])
+                .command()
+                .expect("expected command")
+                .kind()
+        );
+    }
+
+    #[test]
+    fn norm() {
+        assert_eq!(
+            CommandKind::Norm,
+            Args::parse_from(["commute", "norm"])
+                .command()
+                .expect("expected command")
+                .kind()
         );
     }
 
     #[test]
     fn home() {
-        assert_eq!(
-            &Command::Home,
-            Args::parse_from(["commute", "home"]).command().unwrap()
-        );
+        test_profile(CommandKind::Home, "home");
     }
 
     #[test]
     fn work() {
-        assert_eq!(
-            &Command::Work,
-            Args::parse_from(["commute", "work"]).command().unwrap()
-        );
+        test_profile(CommandKind::Work, "work");
     }
 
-    // #[test]
-    // fn set() {
-    //     assert!(matches!(
-    //         Args::parse_from(&["em", "set", "work-browser", "/usr/bin/internet-explorer-6"])
-    //             .command().unwrap(),
-    //         Command::Set(Setting::WorkBrowser { browser if browser != "" })
-    //     ));
-    // }
+    fn test_profile(command_kind: CommandKind, command_name: &str) {
+        assert_eq!(
+            command_kind,
+            Args::parse_from(["commute", command_name])
+                .command()
+                .expect("expected command")
+                .kind(),
+        );
+        assert!(Args::try_parse_from(["commute", command_name, "12"])
+            .err()
+            .expect("expected error")
+            .to_string()
+            .contains("<units>"));
+
+        let units = [
+            ("minute", InputDurationUnit::Minutes),
+            ("minutes", InputDurationUnit::Minutes),
+            ("hour", InputDurationUnit::Hours),
+            ("hours", InputDurationUnit::Hours),
+            ("day", InputDurationUnit::Days),
+            ("days", InputDurationUnit::Days),
+            ("week", InputDurationUnit::Weeks),
+            ("weeks", InputDurationUnit::Weeks),
+            ("month", InputDurationUnit::Months),
+            ("months", InputDurationUnit::Months),
+            ("year", InputDurationUnit::Years),
+            ("years", InputDurationUnit::Years),
+        ];
+        for (raw, unit) in units {
+            assert_eq!(
+                &InputDuration {
+                    number: Some(10),
+                    unit: Some(unit)
+                },
+                Args::parse_from(["commute", command_name, "10", raw])
+                    .command()
+                    .expect("expected defined command")
+                    .input_duration()
+                    .expect("test error: expected input duration")
+            );
+        }
+    }
+
+    #[test]
+    fn config() {
+        assert_eq!(
+            CommandKind::Config,
+            Args::parse_from(["commute", "config"])
+                .command()
+                .expect("expected command")
+                .kind()
+        );
+        assert_eq!(
+            None,
+            Args::parse_from(["commute", "config"])
+                .command()
+                .expect("expected command")
+                .config()
+                .expect("expected config")
+                .config
+        );
+        assert_eq!(
+            Some(Config::Home(ProfileConfig {
+                key: None,
+                value: None
+            })),
+            Args::parse_from(["commute", "config", "home"])
+                .command()
+                .expect("expected command")
+                .config()
+                .expect("expected config")
+                .config
+        );
+        assert_eq!(
+            Some(Config::Work(ProfileConfig {
+                key: None,
+                value: None
+            })),
+            Args::parse_from(["commute", "config", "work"])
+                .command()
+                .expect("expected command")
+                .config()
+                .expect("expected config")
+                .config
+        );
+
+        let keys = [
+            (ConfigKey::Browser, "browser"),
+            (ConfigKey::BackgroundDir, "background-dir"),
+            (ConfigKey::GtkTheme, "gtk-theme"),
+            (ConfigKey::IconTheme, "icon-theme"),
+        ];
+        for (key, raw) in keys {
+            assert_eq!(
+                Some(Config::Home(ProfileConfig {
+                    key: Some(key),
+                    value: None
+                })),
+                Args::parse_from(["commute", "config", "home", raw])
+                    .command()
+                    .expect("expected command")
+                    .config()
+                    .expect("expected config")
+                    .config
+            );
+            assert_eq!(
+                Some(Config::Home(ProfileConfig {
+                    key: Some(key),
+                    value: Some("foo".into()),
+                })),
+                Args::parse_from(["commute", "config", "home", raw, "foo"])
+                    .command()
+                    .expect("expected command")
+                    .config()
+                    .expect("expected config")
+                    .config
+            );
+        }
+
+        assert!(matches!(
+            Args::parse_from(["commute", "config", "work-hours"])
+                .command()
+                .expect("expected command")
+                .config()
+                .expect("expected config command")
+                .config
+                .as_ref()
+                .expect("expected config"),
+            Config::WorkHours(WorkHoursConfig {
+                transition: None,
+                time: None
+            }),
+        ));
+        for (raw, transition) in [
+            ("clock-on", WorkHoursTransition::ClockOn),
+            ("clock-off", WorkHoursTransition::ClockOff),
+        ] {
+            let Config::WorkHours(WorkHoursConfig { transition: found_transition, time }) =
+                Args::parse_from(["commute", "config", "work-hours", raw])
+                    .command()
+                    .expect("expected command")
+                    .config()
+                    .expect("expected config command")
+                    .config
+                    .clone()
+                    .expect("expected config") else {
+                        panic!("expected work hours config")
+                    };
+            assert_eq!(Some(transition), found_transition);
+            assert_eq!(time, None);
+
+            let Config::WorkHours(WorkHoursConfig { transition: found_transition, time }) =
+                Args::parse_from(["commute", "config", "work-hours", raw, "12:34"])
+                    .command()
+                    .expect("expected command")
+                    .config()
+                    .expect("expected config command")
+                    .config
+                    .clone()
+                    .expect("expected config") else {
+                        panic!("expected work hours config")
+                    };
+            assert_eq!(Some(transition), found_transition);
+            assert_eq!(Some("12:34"), time.as_deref());
+        }
+    }
 }
